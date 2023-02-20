@@ -1,0 +1,18 @@
+*, *::after, *::before{
+  box-sizing: border-box;
+}
+html{
+  font-size: 20px;
+}
+header h1{
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 4rem;
+  font-style: italic;
+  color: yellowgreen;
+  text-shadow: 5px 5px #e5e5e5;
+  text-align: center;
+}
+.error{
+  color: red;
+  text-align: center;
+}

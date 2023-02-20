@@ -2,56 +2,88 @@
 
 namespace app\iberia\repositorio;
 
+use DateTime;
+
 class VuelosRepositorio
 {
-    public function findVuelos(int $numPasj, string $origen, string $destino, string $ida, string $vuelta = null): array
-    {
-        $sql = 'SELECT v.codigo as Codigo, origen as Origen, destino as Destino, salida as Salida, duracion as Duracion, fecha as "Fecha ida" 
-        from vuelo as v inner join vuelos as vs on v.codigo  = vs.codigo
-        where origen = :origen and destino = :destino and fecha = :ida and libres > 0 and libres > :pasj';
-
-        if (!is_null($vuelta)) {
-            $sql2 = 'SELECT v.codigo as Codigo, origen as Origen, destino as Destino, salida as Salida, duracion as Duracion, fecha as "Fecha vuelta"
-            from vuelo as v inner join vuelos as vs on v.codigo = vs.codigo
-            where origen = :destino and destino = :origen and fecha = :vuelta and libres > 0 and libres > :pasj';
-        }
-        require_once __DIR__ . '/../../core/conexionBd.inc';
-        $vuelos = [];
-
-        try {
-            $con = (new \ConexionBd())->getConexion();
-            $stn = $con->prepare($sql);
-            $stn->bindValue(':origen', $origen);
-            $stn->bindValue(':destino', $destino);
-            $stn->bindValue(':ida', $ida);
-            $stn->bindValue(':pasj', $numPasj, \pdo::PARAM_INT);
-            $stn->execute();
-
-            $filas = $stn->fetchAll(\PDO::FETCH_ASSOC);
-            if (empty($filas)) {
-                return [];
-            }
-            $vuelos['ida'] = $filas;
-            if (!is_null($vuelta)) {
-                $stn = $con->prepare($sql2);
-                $stn->bindValue(':origen', $origen);
-                $stn->bindValue(':destino', $destino);
-                $stn->bindValue(':vuelta', $vuelta);
-                $stn->bindValue(':pasj', $numPasj, \pdo::PARAM_INT);
-                $stn->execute();
-                $filas = $stn->fetchAll(\PDO::FETCH_ASSOC);
-                if (empty($filas)) {
-                    return [];
-                }
-                $vuelos['vuelta'] = $filas;
-            }
-            var_dump($vuelos);
-            return $vuelos;
-        } catch (\PDOException $ex) {
-            throw $ex;
-        } finally {
-            unset($stn);
-            unset($con);
-        }
+  public function findVuelos(int $numPasj,string $origen, string $destino, string $ida, string $vuelta = null): array
+  {
+    $sql1 = 'SELECT v.codigo as Código, origen as Origen, destino as Destino, 
+                    salida as Salida, duracion as Duración, fecha as "Fecha ida"
+            FROM vuelo AS v
+                INNER JOIN vuelos AS vs ON v.codigo = vs.codigo
+           WHERE origen = :origen
+             AND destino = :destino
+             AND fecha = :ida
+             AND libres > :pasj';
+    if (!is_null($vuelta)) {
+      $sql2 = 'SELECT v.codigo as Código, origen as Origen, destino as Destino, 
+                      salida as Salida, duracion as Duración, fecha as "Fecha vuelta"
+              FROM vuelo AS v
+                  INNER JOIN vuelos AS vs ON v.codigo = vs.codigo
+            WHERE origen = :destino
+              AND destino = :origen
+              AND fecha = :vuelta
+              AND libres > :pasj';
     }
+    require_once __DIR__ . '/../../core/conexionBd.inc';
+    $vuelos = [];
+    try {
+      $con = (new \ConexionBd())->getConexion();
+      $snt = $con->prepare($sql1);
+      $snt->bindValue(':origen', $origen);
+      $snt->bindValue(':destino', $destino);
+      $snt->bindValue(':ida', $ida);
+      $snt->bindValue(':pasj', $numPasj);
+      $snt->execute();
+      $filas = $snt->fetchAll(\PDO::FETCH_ASSOC);
+      if(empty($filas)){
+        return [];
+      }
+      $vuelos['ida'] =  $filas;
+      if (!is_null($vuelta)) {
+        $snt = $con->prepare($sql2);
+        $snt->bindValue(':origen', $origen);
+        $snt->bindValue(':destino', $destino);
+        $snt->bindValue(':vuelta', $vuelta);
+        $snt->bindValue(':pasj', $numPasj);
+        $snt->execute();
+        $filas = $snt->fetchAll(\PDO::FETCH_ASSOC);
+        if(empty($filas)){
+          return [];
+        }
+        $vuelos['vuelta'] = $filas;
+  
+      }
+      return $vuelos;
+    } catch (\PDOException $ex) {
+      throw $ex;
+    } finally {
+      unset($snt);
+      unset($con);
+    }
+  }
+  public function reservaPlazas(int $numPasj, string $codigo, string $fecha):bool
+  {
+    $sql='UPDATE vuelos
+             SET libres = libres - :pasajeros
+           WHERE codigo = :codigo
+             AND fecha = :fecha
+             AND libres >= :pasaj';
+    require_once __DIR__ . '/../../core/conexionBd.inc';
+    try {
+      $con = (new \ConexionBd())->getConexion();
+      $snt = $con->prepare($sql);
+      $snt->bindValue(':pasajeros', $numPasj);
+      $snt->bindValue(':codigo', $codigo);
+      $snt->bindValue(':fecha', $fecha);
+      $snt->bindValue(':pasaj', $numPasj);
+      return $snt->execute();
+    } catch (\PDOException $ex) {
+      throw $ex;
+    } finally {
+      unset($snt);
+      unset($con);
+    }
+  }
 }

@@ -15,74 +15,77 @@
 ?>
 <?php ob_start() ?>
 
-<form action="index.php?ctl=iniReserva" method="post">
-  <label for="">Salir de: <input type="text" name="salida" id="salida"></label>
-  <label for="">Destino <input type="text" name="destino" id="destino"></label>
-  <label for="">Ida: <input type="date" name="ida" id="salida" min="<?= date('Y-m-d') ?>"></label>
-  <label for="">Vuelta: <input type="date" name="vuelta" id="salida" min="<?= date('Y-m-d') ?>"></label>
-  <label for="">Adultos: <input type="number" name="adultos" id="salida" min="1" max=""></label>
-  <label for="">Niños: <input type="number" name="peques" id="peques" min="0" max=""></label>
-  <input type="submit" name="ok">
+<form action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="post">
+  <fieldset>
+    <legend>Buscador de vuelos</legend>
+    <label for="salida">Salir de: <input type="text" name="salida" id="salida"></label>
+    <label for="destino">Destino: <input type="text" name="destino" id="destino"></label>
+    <label for="ida">Ida: <input type="date" name="ida" id="ida" min="<?= date('Y-m-d') ?>"></label>
+    <label for="vuelta">Vuelta: <input type="date" name="vuelta" id="vuelta" min="<?= date('Y-m-d') ?>"></label>
+    <label for="adultos">Adultos: <input type="number" name="adultos" id="adultos" min="1" value="1" require size="4"></label>
+    <label for="peques">Niños: <input type="number" name="peques" id="peques" min="0" value="0" require size="4"></label>
+    <input type="submit" value="Buscar vuelos" name="ok">
+  </fieldset>
 </form>
 <?php if (isset($mensajeError)) : ?>
-  <p><?= $mensajeError ?></p>
+  <p class="error"><?= $mensajeError ?></p>
 <?php elseif (isset($vuelos)) : ?>
-  <form action="" method="post">
+  <form action="index.php?ctl=iniReser" method="post">
     <table id="flyIda">
-      <caption>Vuelos ida desde <?= $vuelos['ida'][0]['Origen'] ?>hacia <?= $vuelos['ida'][0]['Destino'] ?></caption>
+      <caption>Vuelos ida desde <?= $vuelos['ida'][0]['Origen'] ?> hacia <?= $vuelos['ida'][0]['Destino'] ?> </caption>
       <thead>
         <tr>
           <th>Vuelo</th>
           <th>Con salida desde</th>
           <th>A las</th>
           <th>Hacia</th>
-          <th>El dia</th>
+          <th>El día</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
         <?php foreach ($vuelos['ida'] as $value) : ?>
           <tr>
-            <td><?= $value['Codigo'] ?></td>
+            <td><?= $value['Código'] ?></td>
             <td><?= $value['Origen'] ?></td>
             <td><?= substr($value['Salida'], 0, 5); ?></td>
             <td><?= $value['Destino'] ?></td>
             <td><?= $value['Fecha ida'] ?></td>
-            <td><input type="checkbox" name="<?= $value['Codigo'] ?>>[<?= substr($value['Salida'], 0, 5) ?>]"></td>
+            <td><input type="checkbox" name="vueloIda[<?= $value['Código'] ?>][<?= substr($value['Salida'], 0, 5) ?>]"></td>
           </tr>
-        <?php endforeach ?>
+        <?php endforeach; ?>
       </tbody>
     </table>
-
     <?php if (isset($vuelos['vuelta'])) : ?>
       <table id="flyVuelta">
-        <caption>Vuelos ida desde <?= $vuelos['vuelta'][0]['Origen'] ?>hacia <?= $vuelos['vuelta'][0]['Destino'] ?></caption>
+        <caption>Vuelos ida desde <?= $vuelos['vuelta'][0]['Origen'] ?> hacia <?= $vuelos['vuelta'][0]['Destino'] ?> </caption>
         <thead>
           <tr>
             <th>Vuelo</th>
             <th>Con salida desde</th>
             <th>A las</th>
             <th>Hacia</th>
-            <th>El dia</th>
+            <th>El día</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           <?php foreach ($vuelos['vuelta'] as $value) : ?>
             <tr>
-              <td><?= $value['Codigo'] ?></td>
+              <td><?= $value['Código'] ?></td>
               <td><?= $value['Origen'] ?></td>
               <td><?= substr($value['Salida'], 0, 5); ?></td>
               <td><?= $value['Destino'] ?></td>
               <td><?= $value['Fecha vuelta'] ?></td>
-              <td><input type="checkbox" name="<?= $value['Codigo'] ?>>[<?= substr($value['Salida'], 0, 5) ?>]"></td>
+              <td><input type="checkbox" name="vueloVuelta[<?= $value['Código'] ?>][<?= substr($value['Salida'], 0, 5) ?>]"></td>
             </tr>
-          <?php endforeach ?>
+          <?php endforeach; ?>
         </tbody>
       </table>
-    <?php endif ?>
+    <?php endif; ?>
     <input type="submit" value="Confirmar" name="ConfVuelos">
   </form>
 <?php endif; ?>
-
 <?php $contenido = ob_get_clean() ?>
 
 <?php include 'base.php' ?>
